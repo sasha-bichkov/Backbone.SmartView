@@ -7,6 +7,8 @@ class SmartView extends Backbone.View
 
     Backbone.View.apply this, arguments
 
+    @_subviews = []
+
     @_delegateListeners()
 
     autoRender = @_isAutoRender options
@@ -38,12 +40,18 @@ class SmartView extends Backbone.View
     @el.innerHTML = ''
 
 
+  add: (selector, ViewClass, options = {}) ->
+    options.el = @_getSelector selector
+    view = new ViewClass options
+    @addSubview view
+
+
   append: (selector, view) ->
     if !(selector and view)
       view = selector
       selector = @el
 
-    @mixinView selector, view
+    @mixinView selector, view, 'appendChild'
 
 
   renderTemplate: ->
@@ -55,9 +63,10 @@ class SmartView extends Backbone.View
       ''
 
 
-  mixinView: (selector, view) ->
-    $el = @_getElement selector
-    $el.appendChild view.el
+  mixinView: (selector, view, action) ->
+    el = @_getElement selector
+    el[action] view.el
+    @addSubview(view);
 
 
   serialize: ->
@@ -105,6 +114,37 @@ class SmartView extends Backbone.View
       @listenTo target, eventName, callback
     else
       @on key, callback, this
+
+
+    dispose: ->
+      if @disposed then return
+      @disposed = true
+
+      for i in [0..@_subviews.length]
+        @_subviews[i].dispose()
+
+      @unsubscribeAllEvents()
+      @stopListening()
+      @off()
+
+      if typeof @onDispose is 'function'
+        @onDispose()
+
+      properties = ['el', 'options', 'model', 'collection', '_subviews', '_callbacks']
+
+      for i in [0..properties.length]
+        prop = properties[i]
+        delete this[prop]
+
+
+  addSubview: (view) ->
+    @_subviews.push view
+    view
+
+
+  removeSubview: (view) ->
+    while (pos = @_subviews.indexOf(view)) isnt -1
+      @_subviews.splice pos, 1
 
 
   _sliceEventName: (parts) ->
