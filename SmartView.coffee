@@ -116,25 +116,27 @@ class SmartView extends Backbone.View
       @on key, callback, this
 
 
-    dispose: ->
-      if @disposed then return
-      @disposed = true
+  dispose: ->
+    if @disposed then return
+    @disposed = true
 
+    if @_subviews.length
       for i in [0..@_subviews.length]
         @_subviews[i].dispose()
 
-      @unsubscribeAllEvents()
-      @stopListening()
-      @off()
+    @stopListening()
+    @off()
 
-      if typeof @onDispose is 'function'
-        @onDispose()
+    if typeof @onDispose is 'function'
+      @onDispose()
 
-      properties = ['el', 'options', 'model', 'collection', '_subviews', '_callbacks']
+    this.el.remove()
 
-      for i in [0..properties.length]
-        prop = properties[i]
-        delete this[prop]
+    properties = ['el', 'options', 'model', 'collection', '_subviews', '_callbacks']
+
+    for i in [0..properties.length]
+      prop = properties[i]
+      delete this[prop]
 
 
   addSubview: (view) ->
@@ -149,6 +151,3 @@ class SmartView extends Backbone.View
 
   _sliceEventName: (parts) ->
     parts.slice(1).join ' '
-
-
-module.exports = SmartView
