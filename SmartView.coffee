@@ -41,7 +41,7 @@ class SmartView extends Backbone.View
 
 
   add: (selector, ViewClass, options = {}) ->
-    options.el = @_getSelector selector
+    options.el = @_getElement selector
     view = new ViewClass options
     @addSubview view
 
