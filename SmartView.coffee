@@ -130,7 +130,10 @@ class SmartView extends Backbone.View
     if typeof @onDispose is 'function'
       @onDispose()
 
-    this.el.remove()
+    if 'remove' in @el
+      @el.remove()
+    else
+      @el.parentElement.removeChild @el
 
     properties = ['el', 'options', 'model', 'collection', '_subviews', '_callbacks']
 
